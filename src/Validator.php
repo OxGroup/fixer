@@ -20,96 +20,95 @@ class Validator extends CharFix
     public $error;
 
     /**
+     * @param $val
+     *
+     * @return bool
+     */
+    protected function checkValid($val)
+    {
+        switch ($val) {
+            case ("noSpec"):
+                $this->text = $this->noSpec($this->text);
+                break;
+
+            case ("noHtml"):
+                $this->text = $this->noHtml($this->text);
+                break;
+
+            case ("charNumber"):
+                $this->text = $this->charNumber($this->text);
+                break;
+
+            case ("char"):
+                $this->text = $this->char($this->text);
+                break;
+
+            case ("number"):
+                $this->text = $this->number($this->text);
+                break;
+
+            case ("mail"):
+                if (!preg_match("/^[a-zA-Z0-9\._-]+@[a-zA-Z0-9\._-]+\.[a-zA-Z]{2,4}$/i", $this->text)) {
+                    $this->error['mail'][] = "Неверный формат";
+
+                    return false;
+                } else {
+                    return true;
+                }
+                break;
+
+            case ("domain"):
+                $mask = '/^((www\.)?([A-Za-z0-9\-]+\.)+([A-Za-z]+){2,4})(\:(\d)+)?(\/(.*))?$/i';
+                if (!preg_match($mask, $this->text)) {
+                    $this->error['domain'][] = "Неверный формат";
+
+                    return false;
+                } else {
+                    return true;
+                }
+                break;
+
+            case (preg_match('/min:*/', $val) ? true : false):
+                $valcou = explode(":", $val);
+                $count = iconv_strlen($this->text, 'UTF-8');
+
+                if ($count < $valcou['1']) {
+                    $this->error['min'][] = "Требуется минимум {$valcou['1']} символов";
+
+                    return false;
+                } else {
+                    return true;
+                }
+                break;
+
+            case (preg_match('/max:*/', $val) ? true : false):
+                $valcou = explode(":", $val);
+                $count = iconv_strlen($this->text, 'UTF-8');
+
+                if ($count > $valcou['1']) {
+                    $this->error['max'][] = "Максимум символов {$valcou['1']}";
+
+                    return false;
+                } else {
+                    return true;
+                }
+                break;
+
+        }
+    }
+
+    /**
      * @param $text
      * @param $cfg
      *
      * @return bool
      */
-    public function valid($text, $cfg, $name = "", $jsname = "")
+    public function valid($text, $cfg, $name = "")
     {
         $this->text = $text;
         $cfg = explode("|", $cfg);
         foreach ($cfg as $val) {
-            switch ($val) {
-                case ("noSpec"):
-                    $this->text = $this->noSpec($this->text);
-                    break;
-
-                case ("noHtml"):
-                    $this->text = $this->noHtml($this->text);
-                    break;
-
-                case ("charNumber"):
-                    $this->text = $this->charNumber($this->text);
-                    break;
-
-                case ("char"):
-                    $this->text = $this->char($this->text);
-                    break;
-
-                case ("number"):
-                    $this->text = $this->number($this->text);
-                    break;
-
-                case ("pass"):
-                    $text = explode("|", $this->text);
-                    if ($text['0'] != $text['1']) {
-                        $this->error[$name]['pass'] = "Пароли не совпадают";
-
-                        return false;
-                    } else {
-                        $this->text = $text['0'];
-                    }
-                    break;
-
-                case ("mail"):
-                    if (!preg_match("/^[a-zA-Z0-9\._-]+@[a-zA-Z0-9\._-]+\.[a-zA-Z]{2,4}$/i", $this->text)) {
-                        $this->error[$name]['mail'] = "Неверный формат";
-
-                        return false;
-                    } else {
-                        return true;
-                    }
-                    break;
-
-                case ("domain"):
-                    $mask = '/^((www\.)?([A-Za-z0-9\-]+\.)+([A-Za-z]+){2,4})(\:(\d)+)?(\/(.*))?$/i';
-                    if (!preg_match($mask, $this->text)) {
-                        $this->error[$name]['domain'] = "Неверный формат";
-
-                        return false;
-                    } else {
-                        return true;
-                    }
-                    break;
-
-                case (preg_match('/min:*/', $val) ? true : false):
-                    $valcou = explode(":", $val);
-                    $count = iconv_strlen($this->text, 'UTF-8');
-
-                    if ($count < $valcou['1']) {
-                        $this->error[$name]['min'] = "Требуется минимум {$valcou['1']} символов";
-
-                        return false;
-                    } else {
-                        return true;
-                    }
-                    break;
-
-                case (preg_match('/max:*/', $val) ? true : false):
-                    $valcou = explode(":", $val);
-                    $count = iconv_strlen($this->text, 'UTF-8');
-
-                    if ($count > $valcou['1']) {
-                        $this->error[$name]['max'] = "Максимум символов {$valcou['1']}";
-
-                        return false;
-                    } else {
-                        return true;
-                    }
-                    break;
-
-            }
+            $this->checkValid($val);
         }
         if ($this->text == $text) {
             return true;

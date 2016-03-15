@@ -201,5 +201,4 @@ class CharFix
 
         return $this->text;
     }
-
 }
