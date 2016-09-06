@@ -48,7 +48,7 @@ class Validator extends CharFix
                 break;
 
             case ("mail"):
-                if (!preg_match("/^[a-zA-Z0-9\._-]+@[a-zA-Z0-9\._-]+\.[a-zA-Z]{2,4}$/i", $this->text)) {
+                if (!preg_match("/^[a-zA-Z0-9\._-]+@[a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6}$/i", $this->text)) {
                     $this->error['mail'][] = "Неверный формат";
 
                     return false;
